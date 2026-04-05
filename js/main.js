@@ -54,7 +54,8 @@ const answers = {};
 const contactData = {
   name: '',
   company: '',
-  phone: ''
+  phone: '',
+  email: ''
 };
 
 // --- Helpers ---
@@ -72,10 +73,12 @@ function getNextBtn()      { return document.getElementById('nextBtn'); }
 
 function isStepAnswered(step) {
   if (step === CONTACT_STEP) {
-    const name    = (document.getElementById('contactName').value   || '').trim();
+    const name    = (document.getElementById('contactName').value    || '').trim();
     const company = (document.getElementById('contactCompany').value || '').trim();
-    const phone   = (document.getElementById('contactPhone').value  || '').trim();
-    return name.length > 0 && company.length > 0 && phone.length > 0;
+    const phone   = (document.getElementById('contactPhone').value   || '').trim();
+    const emailEl = document.getElementById('contactEmail');
+    const email   = emailEl ? (emailEl.value || '').trim() : '';
+    return name.length > 0 && company.length > 0 && phone.length > 0 && email.length > 0;
   }
 
   const stepEl = getStepEl(step);
@@ -103,19 +106,25 @@ function updateProgress() {
 function updateNavButtons() {
   const prevBtn = getPrevBtn();
   const nextBtn = getNextBtn();
+  const submitBtn = document.getElementById('submitBtn');
   const answered = isStepAnswered(currentStep);
 
   prevBtn.disabled = currentStep === 1;
 
   if (currentStep === CONTACT_STEP) {
-    nextBtn.textContent = 'Voir mon résultat';
-  } else if (currentStep === QUIZ_QUESTIONS) {
-    nextBtn.textContent = 'Voir mon résultat';
+    // Step 7: hide nextBtn, show submitBtn
+    nextBtn.style.display = 'none';
+    if (submitBtn) {
+      submitBtn.style.display = '';
+      submitBtn.disabled = !answered;
+    }
   } else {
-    nextBtn.textContent = 'Suivant';
+    // Steps 1-6: show nextBtn, hide submitBtn
+    if (submitBtn) submitBtn.style.display = 'none';
+    nextBtn.style.display = '';
+    nextBtn.textContent = currentStep === QUIZ_QUESTIONS ? 'Voir mon résultat' : 'Suivant';
+    nextBtn.disabled = !answered;
   }
-
-  nextBtn.disabled = !answered;
 }
 
 function showStep(step) {
@@ -145,12 +154,11 @@ function saveCurrentAnswers() {
 }
 
 function saveContactData() {
-  contactData.name    = (document.getElementById('contactName').value   || '').trim();
+  contactData.name    = (document.getElementById('contactName').value    || '').trim();
   contactData.company = (document.getElementById('contactCompany').value || '').trim();
-  contactData.phone   = (document.getElementById('contactPhone').value  || '').trim();
-
-  // CRM / tracking hook — replace with your integration:
-  // console.log('Lead data:', { ...answers, ...contactData });
+  contactData.phone   = (document.getElementById('contactPhone').value   || '').trim();
+  const emailEl = document.getElementById('contactEmail');
+  contactData.email   = emailEl ? (emailEl.value || '').trim() : '';
 }
 
 // --- Eligibility ---
@@ -181,10 +189,68 @@ function showNotEligibleResult() {
 window.quizNext = function () {
   if (!isStepAnswered(currentStep)) return;
 
-  // Contact step: save and show eligible result
+  // Contact step: populate hidden fields, submit to Formspree, then show result
   if (currentStep === CONTACT_STEP) {
     saveContactData();
-    showEligibleResult();
+
+    // Copy quiz answers into hidden form fields (q2 is checkbox → join)
+    ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'].forEach(q => {
+      const el = document.getElementById('hidden' + q.toUpperCase());
+      if (el) {
+        const val = answers[q];
+        el.value = Array.isArray(val) ? val.join(', ') : (val || '');
+      }
+    });
+
+    const submitBtn = document.getElementById('submitBtn');
+    const errEl     = document.getElementById('formError');
+    const successEl = document.getElementById('formSuccess');
+
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Envoi en cours…'; }
+    if (errEl)     errEl.style.display = 'none';
+    if (successEl) successEl.style.display = 'none';
+
+    fetch('https://formspree.io/f/xnjoorqp', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contactName:    contactData.name,
+        contactCompany: contactData.company,
+        contactPhone:   contactData.phone,
+        email:          contactData.email,
+        q1: answers.q1 || '',
+        q2: Array.isArray(answers.q2) ? answers.q2.join(', ') : (answers.q2 || ''),
+        q3: answers.q3 || '',
+        q4: answers.q4 || '',
+        q5: answers.q5 || '',
+        q6: answers.q6 || '',
+        _subject: 'Nouveau lead - Machine.io'
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Envoyer'; }
+        if (successEl) {
+          successEl.textContent = 'Envoi réussi !';
+          successEl.style.display = 'block';
+        }
+        showEligibleResult();
+      } else {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Envoyer'; }
+        if (errEl) {
+          errEl.textContent = 'Une erreur est survenue. Veuillez réessayer.';
+          errEl.style.display = 'block';
+        }
+      }
+    })
+    .catch(() => {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Envoyer'; }
+      if (errEl) {
+        errEl.textContent = 'Erreur réseau. Veuillez réessayer.';
+        errEl.style.display = 'block';
+      }
+    });
     return;
   }
 
@@ -197,7 +263,20 @@ window.quizNext = function () {
       currentStep = CONTACT_STEP;
       showStep(currentStep);
     } else {
-      // Not eligible: skip contact step
+      // Not eligible: send quiz answers fire-and-forget, no contact data available
+      fetch('https://formspree.io/f/xnjoorqp', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          q1: answers.q1 || '',
+          q2: Array.isArray(answers.q2) ? answers.q2.join(', ') : (answers.q2 || ''),
+          q3: answers.q3 || '',
+          q4: answers.q4 || '',
+          q5: answers.q5 || '',
+          q6: answers.q6 || '',
+          _subject: 'Nouveau lead non éligible - Machine.io'
+        })
+      });
       showNotEligibleResult();
     }
     return;
@@ -222,10 +301,19 @@ document.querySelectorAll('.quiz-option input').forEach(input => {
 });
 
 // Contact text inputs (live validation)
-['contactName', 'contactCompany', 'contactPhone'].forEach(id => {
+['contactName', 'contactCompany', 'contactPhone', 'contactEmail'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', updateNavButtons);
 });
+
+// Intercept native form submit — keep AJAX logic, prevent page redirect
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+  contactForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    quizNext();
+  });
+}
 
 // --- Init ---
 showStep(1);
