@@ -2,6 +2,9 @@
 <html lang="fr">
 
 <head>
+  <!-- Cookiebot -->
+  <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="ebe81b66-d402-4db2-a384-1b5aba269712" data-blockingmode="auto" type="text/javascript"></script>
+  <!-- End Cookiebot -->
   <!-- Google Tag Manager -->
   <script>(function (w, d, s, l, i) {
       w[l] = w[l] || []; w[l].push({
@@ -24,7 +27,7 @@
     !function (f, b, e, v, n, t, s) {
       if (f.fbq) return; n = f.fbq = function () {
         n.callMethod ?
-        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
       };
       if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
       n.queue = []; t = b.createElement(e); t.async = !0;
@@ -546,12 +549,14 @@
                 </div>
                 <div class="contact-field">
                   <label class="contact-label" for="contactEmail">Adresse email</label>
-                  <input type="email" id="contactEmail" name="email" class="contact-input"
-                    placeholder="jean@exemple.fr" autocomplete="email" required />
+                  <input type="email" id="contactEmail" name="email" class="contact-input" placeholder="jean@exemple.fr"
+                    autocomplete="email" required />
                 </div>
               </form>
-              <p id="formError" style="display:none; color:#c0392b; font-size:0.875rem; margin-top:0.75rem; text-align:center;"></p>
-              <p id="formSuccess" style="display:none; color:#1f7a1f; font-size:0.875rem; margin-top:0.75rem; text-align:center;"></p>
+              <p id="formError"
+                style="display:none; color:#c0392b; font-size:0.875rem; margin-top:0.75rem; text-align:center;"></p>
+              <p id="formSuccess"
+                style="display:none; color:#1f7a1f; font-size:0.875rem; margin-top:0.75rem; text-align:center;"></p>
             </div>
 
           </div>
@@ -559,7 +564,8 @@
           <div class="quiz-nav">
             <button type="button" class="btn btn-ghost" id="prevBtn" onclick="quizPrev()" disabled>Retour</button>
             <button type="button" class="btn btn-primary" id="nextBtn" onclick="quizNext()" disabled>Suivant</button>
-            <button type="submit" form="contactForm" class="btn btn-primary" id="submitBtn" style="display:none;" disabled>Envoyer</button>
+            <button type="submit" form="contactForm" class="btn btn-primary" id="submitBtn" style="display:none;"
+              disabled>Envoyer</button>
           </div>
         </div>
 
