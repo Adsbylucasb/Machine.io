@@ -523,30 +523,43 @@
               <p class="quiz-hint">Pour préparer votre appel stratégique et vous envoyer votre analyse personnalisée</p>
               <form id="contactForm" action="https://formspree.io/f/xnjoorqp" method="POST" class="quiz-contact-fields">
                 <input type="hidden" name="_subject" value="Nouveau lead - Machine.io">
-                <input type="hidden" name="_replyto" value="adsbylucasb@gmail.com">
+                <input type="hidden" name="q1" id="hiddenQ1">
+                <input type="hidden" name="q2" id="hiddenQ2">
+                <input type="hidden" name="q3" id="hiddenQ3">
+                <input type="hidden" name="q4" id="hiddenQ4">
+                <input type="hidden" name="q5" id="hiddenQ5">
+                <input type="hidden" name="q6" id="hiddenQ6">
                 <div class="contact-field">
                   <label class="contact-label" for="contactName">Prénom et nom</label>
                   <input type="text" id="contactName" name="contactName" class="contact-input" placeholder="Jean Dupont"
-                    autocomplete="name" />
+                    autocomplete="name" required />
                 </div>
                 <div class="contact-field">
                   <label class="contact-label" for="contactCompany">Nom de l'entreprise</label>
                   <input type="text" id="contactCompany" name="contactCompany" class="contact-input"
-                    placeholder="EcoRénov SAS" autocomplete="organization" />
+                    placeholder="EcoRénov SAS" autocomplete="organization" required />
                 </div>
                 <div class="contact-field">
                   <label class="contact-label" for="contactPhone">Numéro de téléphone</label>
                   <input type="tel" id="contactPhone" name="contactPhone" class="contact-input"
-                    placeholder="06 12 34 56 78" autocomplete="tel" />
+                    placeholder="06 12 34 56 78" autocomplete="tel" inputmode="tel" required />
+                </div>
+                <div class="contact-field">
+                  <label class="contact-label" for="contactEmail">Adresse email</label>
+                  <input type="email" id="contactEmail" name="email" class="contact-input"
+                    placeholder="jean@exemple.fr" autocomplete="email" required />
                 </div>
               </form>
+              <p id="formError" style="display:none; color:#c0392b; font-size:0.875rem; margin-top:0.75rem; text-align:center;"></p>
+              <p id="formSuccess" style="display:none; color:#1f7a1f; font-size:0.875rem; margin-top:0.75rem; text-align:center;"></p>
             </div>
 
           </div>
 
           <div class="quiz-nav">
-            <button class="btn btn-ghost" id="prevBtn" onclick="quizPrev()" disabled>Retour</button>
-            <button class="btn btn-primary" id="nextBtn" onclick="quizNext()" disabled>Suivant</button>
+            <button type="button" class="btn btn-ghost" id="prevBtn" onclick="quizPrev()" disabled>Retour</button>
+            <button type="button" class="btn btn-primary" id="nextBtn" onclick="quizNext()" disabled>Suivant</button>
+            <button type="submit" form="contactForm" class="btn btn-primary" id="submitBtn" style="display:none;" disabled>Envoyer</button>
           </div>
         </div>
 
